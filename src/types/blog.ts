@@ -44,12 +44,27 @@ export interface MediaFile {
   caption?: string;
 }
 
+export interface ContentBlock {
+  id: string;
+  type: 'text' | 'image' | 'video' | 'audio' | 'quote' | 'link';
+  content: string;
+  media?: MediaFile;
+  metadata?: {
+    alt?: string;
+    caption?: string;
+    url?: string;
+    title?: string;
+  };
+}
+
 export interface Post {
   id: string;
   title: string;
   slug: string;
   content: string;
+  contentBlocks?: ContentBlock[]; // New: multiple content blocks
   excerpt?: string;
+  summary?: string; // New: TL;DR summary
   type: PostType;
   status: PostStatus;
   license: License;

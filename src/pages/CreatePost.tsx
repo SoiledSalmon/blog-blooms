@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PostType, PostStatus, License } from '@/types/blog';
+import { PostType, PostStatus, License, ContentBlock } from '@/types/blog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,9 +11,11 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBlog } from '@/contexts/BlogContext';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Eye, Send, Save } from 'lucide-react';
+import { ArrowLeft, Eye, Send, Save, Blocks } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { ContentBlockEditor } from '@/components/post/ContentBlockEditor';
+import { ContentBlockRenderer } from '@/components/post/ContentBlockRenderer';
 
 export default function CreatePost() {
   const navigate = useNavigate();
@@ -31,8 +33,10 @@ export default function CreatePost() {
     featuredImage: ''
   });
 
+  const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([]);
   const [newTag, setNewTag] = useState('');
   const [activeTab, setActiveTab] = useState('write');
+  const [editMode, setEditMode] = useState<'traditional' | 'blocks'>('traditional');
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -62,10 +66,19 @@ export default function CreatePost() {
       return;
     }
 
-    if (!formData.content.trim()) {
+    if (editMode === 'traditional' && !formData.content.trim()) {
       toast({
         title: "Content required", 
         description: "Please add some content to your post.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (editMode === 'blocks' && contentBlocks.length === 0) {
+      toast({
+        title: "Content blocks required", 
+        description: "Please add at least one content block.",
         variant: "destructive"
       });
       return;
@@ -75,6 +88,7 @@ export default function CreatePost() {
       const post = await createPost({
         ...formData,
         status,
+        contentBlocks: editMode === 'blocks' ? contentBlocks : undefined,
         tags: formData.tags.map(name => ({
           id: `tag_${name}`,
           name,
@@ -143,44 +157,95 @@ export default function CreatePost() {
                 />
               </div>
 
-              {/* Content with Tabs */}
+              {/* Content Mode Toggle */}
+              <div className="flex items-center space-x-4 p-4 bg-accent/50 rounded-lg">
+                <Label className="text-sm font-medium">Content Mode:</Label>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant={editMode === 'traditional' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setEditMode('traditional')}
+                  >
+                    Traditional
+                  </Button>
+                  <Button
+                    variant={editMode === 'blocks' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setEditMode('blocks')}
+                  >
+                    <Blocks className="h-4 w-4 mr-2" />
+                    Blocks
+                  </Button>
+                </div>
+              </div>
+
+              {/* Content */}
               <div>
                 <Label>Content</Label>
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="write">Write</TabsTrigger>
-                    <TabsTrigger value="preview">
-                      <Eye className="h-4 w-4 mr-2" />
-                      Preview
-                    </TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="write" className="mt-4">
-                    <Textarea
-                      value={formData.content}
-                      onChange={(e) => handleInputChange('content', e.target.value)}
-                      placeholder="Write your post content... (Markdown supported)"
-                      className="min-h-[400px] font-mono"
-                    />
-                    <p className="text-sm text-muted-foreground mt-2">
-                      Markdown is supported. Use **bold**, *italic*, `code`, and more.
-                    </p>
-                  </TabsContent>
-                  
-                  <TabsContent value="preview" className="mt-4">
-                    <div className="min-h-[400px] p-4 border rounded-md bg-card">
-                      {formData.content ? (
-                        <div className="blog-content">
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                            {formData.content}
-                          </ReactMarkdown>
-                        </div>
-                      ) : (
-                        <p className="text-muted-foreground">Preview will appear here...</p>
-                      )}
-                    </div>
-                  </TabsContent>
-                </Tabs>
+                {editMode === 'traditional' ? (
+                  <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="write">Write</TabsTrigger>
+                      <TabsTrigger value="preview">
+                        <Eye className="h-4 w-4 mr-2" />
+                        Preview
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="write" className="mt-4">
+                      <Textarea
+                        value={formData.content}
+                        onChange={(e) => handleInputChange('content', e.target.value)}
+                        placeholder="Write your post content... (Markdown supported)"
+                        className="min-h-[400px] font-mono"
+                      />
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Markdown is supported. Use **bold**, *italic*, `code`, and more.
+                      </p>
+                    </TabsContent>
+                    
+                    <TabsContent value="preview" className="mt-4">
+                      <div className="min-h-[400px] p-4 border rounded-md bg-card">
+                        {formData.content ? (
+                          <div className="blog-content">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {formData.content}
+                            </ReactMarkdown>
+                          </div>
+                        ) : (
+                          <p className="text-muted-foreground">Preview will appear here...</p>
+                        )}
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                ) : (
+                  <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="write">Edit Blocks</TabsTrigger>
+                      <TabsTrigger value="preview">
+                        <Eye className="h-4 w-4 mr-2" />
+                        Preview
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="write" className="mt-4">
+                      <ContentBlockEditor
+                        blocks={contentBlocks}
+                        onChange={setContentBlocks}
+                      />
+                    </TabsContent>
+                    
+                    <TabsContent value="preview" className="mt-4">
+                      <div className="min-h-[400px] p-4 border rounded-md bg-card">
+                        {contentBlocks.length > 0 ? (
+                          <ContentBlockRenderer blocks={contentBlocks} />
+                        ) : (
+                          <p className="text-muted-foreground">Add content blocks to see preview...</p>
+                        )}
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                )}
               </div>
             </CardContent>
           </Card>

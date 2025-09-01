@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { TldrButton } from '@/components/post/TldrButton';
+import { ContentBlockRenderer } from '@/components/post/ContentBlockRenderer';
 
 export default function PostDetail() {
   const { id } = useParams<{ id: string }>();
@@ -212,6 +214,8 @@ export default function PostDetail() {
 
               {/* Action Buttons */}
               <div className="flex items-center space-x-2">
+                <TldrButton post={post} />
+                
                 <Button
                   variant="ghost"
                   size="sm"
@@ -251,7 +255,9 @@ export default function PostDetail() {
 
           {/* Content */}
           <div className="blog-content">
-            {post.type === 'QUOTE' ? (
+            {post.contentBlocks && post.contentBlocks.length > 0 ? (
+              <ContentBlockRenderer blocks={post.contentBlocks} />
+            ) : post.type === 'QUOTE' ? (
               <blockquote className="text-2xl italic text-center py-8 border-l-4 border-primary pl-8">
                 {post.content}
               </blockquote>
