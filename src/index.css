@@ -2,14 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Blog Design System - Modern, accessible, and beautiful */
 
 @layer base {
   :root {
+    /* Core Brand Colors */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
+    
+    /* Blog-specific colors */
+    --primary: 263 70% 50%; /* Rich purple for blog branding */
+    --primary-foreground: 0 0% 98%;
+    --primary-hover: 263 70% 45%;
+    
+    /* Content colors */
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --card-hover: 240 9% 98%;
+    
+    /* Interactive elements */
+    --accent: 263 70% 96%;
+    --accent-foreground: 263 70% 20%;
+    --accent-hover: 263 70% 92%;
+    
+    /* Status colors */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 98%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(263 70% 50%), hsl(263 70% 60%));
+    --gradient-hero: linear-gradient(135deg, hsl(263 70% 50%), hsl(280 70% 55%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(240 9% 98%));
+    
+    /* Shadows */
+    --shadow-card: 0 4px 6px -1px hsl(263 70% 50% / 0.1), 0 2px 4px -1px hsl(263 70% 50% / 0.06);
+    --shadow-card-hover: 0 10px 15px -3px hsl(263 70% 50% / 0.15), 0 4px 6px -2px hsl(263 70% 50% / 0.1);
+    --shadow-button: 0 1px 2px 0 hsl(263 70% 50% / 0.15);
+    
+    /* Content spacing */
+    --content-max-width: 65ch;
+    --sidebar-width: 16rem;
 
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
@@ -56,8 +92,34 @@ All colors MUST be HSL.
   }
 
   .dark {
+    /* Dark mode colors */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
+    
+    /* Blog-specific dark colors */
+    --primary: 263 70% 60%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --primary-hover: 263 70% 65%;
+    
+    /* Dark content colors */
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --card-hover: 217.2 32.6% 17.5%;
+    
+    /* Dark interactive elements */
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --accent-hover: 217.2 32.6% 22%;
+    
+    /* Dark gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(263 70% 60%), hsl(263 70% 50%));
+    --gradient-hero: linear-gradient(135deg, hsl(263 70% 60%), hsl(280 70% 45%));
+    --gradient-card: linear-gradient(145deg, hsl(222.2 84% 4.9%), hsl(217.2 32.6% 17.5%));
+    
+    /* Dark shadows */
+    --shadow-card: 0 4px 6px -1px hsl(0 0% 0% / 0.2), 0 2px 4px -1px hsl(0 0% 0% / 0.1);
+    --shadow-card-hover: 0 10px 15px -3px hsl(0 0% 0% / 0.3), 0 4px 6px -2px hsl(0 0% 0% / 0.15);
+    --shadow-button: 0 1px 2px 0 hsl(0 0% 0% / 0.2);
 
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
@@ -100,6 +162,96 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-background;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-accent rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-accent-foreground;
+  }
+}
+
+@layer components {
+  /* Blog-specific component styles */
+  .blog-card {
+    @apply bg-card border border-border rounded-lg overflow-hidden transition-all duration-300;
+    box-shadow: var(--shadow-card);
+  }
+  
+  .blog-card:hover {
+    @apply -translate-y-1;
+    box-shadow: var(--shadow-card-hover);
+  }
+  
+  .blog-content {
+    @apply prose prose-lg max-w-none;
+  }
+  
+  .blog-content h1 {
+    @apply text-3xl font-bold mb-4 text-foreground;
+  }
+  
+  .blog-content h2 {
+    @apply text-2xl font-semibold mb-3 text-foreground;
+  }
+  
+  .blog-content h3 {
+    @apply text-xl font-medium mb-2 text-foreground;
+  }
+  
+  .blog-content p {
+    @apply mb-4 text-foreground/90 leading-relaxed;
+  }
+  
+  .blog-content code {
+    @apply bg-accent px-2 py-1 rounded text-accent-foreground font-mono text-sm;
+  }
+  
+  .blog-content pre {
+    @apply bg-accent p-4 rounded-lg overflow-x-auto;
+  }
+  
+  .blog-content blockquote {
+    @apply border-l-4 border-primary pl-4 my-4 italic text-foreground/80;
+  }
+  
+  /* Animations */
+  .fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+  
+  .slide-up {
+    animation: slideUp 0.5s ease-out forwards;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* Image hover effects */
+  .image-hover {
+    @apply transition-transform duration-300 ease-out;
+  }
+  
+  .image-hover:hover {
+    @apply scale-105;
   }
 }
